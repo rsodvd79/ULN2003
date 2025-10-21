@@ -1,11 +1,12 @@
 #include <Arduino.h>
 #include <Stepper.h>
+#include <math.h>
 
 // define Input pins of the Motor
-#define OUTPUT1 7 // Connected to the Blue coloured wire
-#define OUTPUT2 6 // Connected to the Pink coloured wire
-#define OUTPUT3 5 // Connected to the Yellow coloured wire
-#define OUTPUT4 4 // Connected to the Orange coloured wire
+#define OUTPUT1 5 // Connected to the Blue coloured wire
+#define OUTPUT2 4 // Connected to the Pink coloured wire
+#define OUTPUT3 3 // Connected to the Yellow coloured wire
+#define OUTPUT4 2 // Connected to the Orange coloured wire
 
 // Define the number of steps per rotation
 const int stepsPerRotation = 2048; // 28BYJ-48 has 2048 steps per rotation in full step mode as given in data sheet
@@ -14,8 +15,10 @@ const int stepsPerRotation = 2048; // 28BYJ-48 has 2048 steps per rotation in fu
 // OUTPUT1 and OUTPUT3 are connected to one coil and OUTPUT2 and OUTPUT4 are connected to one Coil
 Stepper myStepper(stepsPerRotation, OUTPUT1, OUTPUT3, OUTPUT2, OUTPUT4);
 
-int speedRPM = 1;  // Speed in Revolutions per Minute
-int stepCount = 0; // To keep track of steps taken
+const int minSpeedRPM = 1;
+const int maxSpeedRPM = 19;
+const float speedWaveFrequencyHz = 0.05f; // One full sinusoid every 20 seconds
+int speedRPM = (minSpeedRPM + maxSpeedRPM) / 2; // Start near the midpoint
 
 void setup()
 {
@@ -25,15 +28,15 @@ void setup()
 
 void loop()
 {
-  stepCount++;
-  if (stepCount > stepsPerRotation)
+  unsigned long now = millis();
+  float phase = (now / 1000.0f) * TWO_PI * speedWaveFrequencyHz;
+  float normalized = (sin(phase) + 1.0f) * 0.5f; // Map sine from [-1, 1] to [0, 1]
+  int newSpeedRPM = minSpeedRPM +
+                    (int)(((maxSpeedRPM - minSpeedRPM) * normalized) + 0.5f);
+
+  if (newSpeedRPM != speedRPM)
   {
-    stepCount = 0;
-    speedRPM++;
-    if (speedRPM > 19)
-    {
-      speedRPM = 1;
-    }
+    speedRPM = newSpeedRPM;
     myStepper.setSpeed(speedRPM);
   }
 

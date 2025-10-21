@@ -2,7 +2,7 @@
 
 Piccolo progetto per pilotare un motore passo‑passo 28BYJ‑48 tramite la scheda driver ULN2003 usando un Arduino UNO e la libreria `Stepper`.
 
-Il programma corrente fa avanzare il motore di 1 passo alla volta a 15 RPM; sono presenti esempi (commentati) per fare una rotazione completa in entrambi i versi.
+Il programma corrente fa avanzare il motore di 1 passo alla volta variando la velocità in modo sinusoidale fra 1 e 19 RPM; sono presenti esempi (commentati) per fare una rotazione completa in entrambi i versi.
 
 ## Hardware necessario
 
@@ -52,8 +52,9 @@ Il programma non stampa nulla su Serial Monitor (non è necessario aprirlo).
 ## Logica del codice principale
 
 - `stepsPerRotation = 2048` per 28BYJ‑48 in modalità full‑step (1 rotazione ≈ 2048 passi). 
-- `myStepper.setSpeed(15)` imposta 15 RPM.
-- Nel `loop()` viene eseguito `myStepper.step(1)` per avanzare continuamente di un singolo passo.
+- `minSpeedRPM = 1` e `maxSpeedRPM = 19` definiscono i limiti di velocità.
+- `speedWaveFrequencyHz = 0.05` imposta la frequenza dell’onda sinusoidale (un ciclo completo ogni ~20 s).
+- Nel `loop()` viene calcolata la sinusoide tramite `millis()`, si aggiorna `myStepper.setSpeed(...)` solo quando cambia il valore e si esegue `myStepper.step(1)` per avanzare continuamente di un singolo passo.
 
 Per fare una rotazione completa o invertire il verso, scommenta gli esempi presenti in `src/main.cpp`:
 
@@ -61,7 +62,7 @@ Per fare una rotazione completa o invertire il verso, scommenta gli esempi prese
 - Rotazione completa indietro: `myStepper.step(-stepsPerRotation);`
 
 Suggerimenti:
-- Aumenta/diminuisci `setSpeed(...)` per variare la velocità (RPM).
+- Modifica `minSpeedRPM`, `maxSpeedRPM` o `speedWaveFrequencyHz` per cambiare l’intervallo e il ritmo di variazione della velocità.
 - Se il motore vibra ma non gira, ricontrolla l’ordine dei pin e l’alimentazione (preferisci 5V esterni con massa comune).
 - Se usi half‑step con altre librerie/sequenze, i passi per giro possono diventare 4096.
 
