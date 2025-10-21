@@ -1,31 +1,48 @@
 #include <Arduino.h>
 #include <Stepper.h>
 
-//define Input pins of the Motor
-#define OUTPUT1   7                // Connected to the Blue coloured wire
-#define OUTPUT2   6                // Connected to the Pink coloured wire
-#define OUTPUT3   5                // Connected to the Yellow coloured wire
-#define OUTPUT4   4                // Connected to the Orange coloured wire
+// define Input pins of the Motor
+#define OUTPUT1 7 // Connected to the Blue coloured wire
+#define OUTPUT2 6 // Connected to the Pink coloured wire
+#define OUTPUT3 5 // Connected to the Yellow coloured wire
+#define OUTPUT4 4 // Connected to the Orange coloured wire
 
 // Define the number of steps per rotation
-const int stepsPerRotation = 2048;  // 28BYJ-48 has 2048 steps per rotation in full step mode as given in data sheet
+const int stepsPerRotation = 2048; // 28BYJ-48 has 2048 steps per rotation in full step mode as given in data sheet
 
 // Initialize the stepper motor with the sequence of control pins OUTPUT1, OUTPUT3, OUTPUT2, IN4
 // OUTPUT1 and OUTPUT3 are connected to one coil and OUTPUT2 and OUTPUT4 are connected to one Coil
-Stepper myStepper(stepsPerRotation, OUTPUT1, OUTPUT3, OUTPUT2, OUTPUT4);  
+Stepper myStepper(stepsPerRotation, OUTPUT1, OUTPUT3, OUTPUT2, OUTPUT4);
 
-void setup() {
+int speedRPM = 1;  // Speed in Revolutions per Minute
+int stepCount = 0; // To keep track of steps taken
+
+void setup()
+{
   // Set the speed of the motor in RPM (adjust as needed)
-  myStepper.setSpeed(15);  // 15 RPM
+  myStepper.setSpeed(speedRPM); // 15 RPM
 }
 
-void loop() {
-  myStepper.step(1);  
+void loop()
+{
+  stepCount++;
+  if (stepCount > stepsPerRotation)
+  {
+    stepCount = 0;
+    speedRPM++;
+    if (speedRPM > 19)
+    {
+      speedRPM = 1;
+    }
+    myStepper.setSpeed(speedRPM);
+  }
+
+  myStepper.step(1);
 
   // Rotate in One Direction and complete one complete rotation i.e 2048 steps
-  //myStepper.step(stepsPerRotation);  
- // delay(1000);  // Delay between rotations
+  // myStepper.step(stepsPerRotation);
+  // delay(1000);  // Delay between rotations
   // For Rotation in opposite direction provide the variable to the parameter with negative Sign
- // myStepper.step(-stepsPerRotation);  
- // delay(1000);  // Delay between rotations
+  // myStepper.step(-stepsPerRotation);
+  // delay(1000);  // Delay between rotations
 }
